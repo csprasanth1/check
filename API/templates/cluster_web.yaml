@@ -1,0 +1,139 @@
+airgapConfig:
+  extensionId: {{Airgap_extensionID}}
+  fqdn: {{Airgap_fqdn}}
+  type: extension
+{% if data['categories'][plat_idx2]['fields'][field_idx]['fieldValue'] == "Workload" %}
+clusterConfig:
+{% if syslog_server  != '' %}
+  systemSettings:
+  - name: syslog
+    properties:
+      host: {{syslog_server}}
+      port: 514
+      protocol: udp
+{% endif %}
+  tools:
+  - name: harbor
+    properties:
+      extensionId: {{Harbor_extensionID}}
+      password: {{harbor_passwd}}
+      type: extension
+      url: {{Harbor_url}}
+      username: {{harbor_user}}
+{% for n in range(data['categories'][plat_idx2]['fields'][field_idx]['children'][csi_idx]['children']| length) %}
+{% if data['categories'][plat_idx2]['fields'][field_idx]['children'][csi_idx]['children'][n]['fieldName'] == 'Storage' %}
+{% if data['categories'][plat_idx2]['fields'][field_idx]['children'][csi_idx]['children'][n]['fieldValue'] == 'nfs' %}
+  csi:
+  - name: nfs_client
+    properties:
+      isDefault: false
+      name: nfs-client
+      serverIP: {{nfs_svr}}
+      mountPath: {{nfs_path}}
+{% endif %}
+{% endif %}
+{% endfor %}
+{% endif %}
+clusterPassword: {{ clspass }}
+clusterTemplateId: {{clusterTempId}}
+{% if data['categories'][plat_idx2]['fields'][field_idx]['fieldValue'] == "Workload" %}
+clusterType: WORKLOAD
+{% endif %}
+{% if data['categories'][plat_idx2]['fields'][field_idx]['fieldValue'] == "Management" %}
+clusterType: MANAGEMENT
+{% endif %}
+endpointIP: {{clsip}}
+hcxCloudUrl: {{tcp}}
+managementClusterId: {{mgtid}}
+masterNodes:
+
+{% for x in range(data['categories'][plat_idx2]['fields'][field_idx]['children']| length) %}
+{% for n in range(data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children']| length ) %}
+{% if data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][n]['fieldName'] == 'Node Pool Type' and data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][n]['fieldValue'] == 'Master' %}
+{% for z in range(data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children']| length ) %}
+{% if data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]['fieldName'] == 'Node Pool Name'%}
+- name: {{data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]['fieldValue']}}
+  networks:
+{% elif data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["fieldName"] == 'Network' %}
+{% for p in range(data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["valueList"]| length) %}
+{% if data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["valueList"][p] == 'MANAGEMENT'%}
+  - isManagement: true
+{% endif %}
+    label: {{data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["valueList"][p]}}
+    networkName: {{cluster_name}}_{{data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["valueList"][p]}} 
+{% endfor %}
+    nameservers:
+    - {{ dns_server }}
+{% endif %}
+{% endfor %}
+  placementParams:
+  - name: {{data1['MasterNodeAllocation'][0]['ClusterName'] }}
+    type: ClusterComputeResource
+  - name: {{data1['MasterNodeStorageAllocation'][0]['Datastore'] }}
+    type: Datastore
+  - name: {{ RP }}
+    type: ResourcePool
+{% endif %}
+{% endfor %}
+{% endfor %}
+
+{% for n in range(data['categories'][plat_idx2]['fields']| length) %}
+{% if data['categories'][plat_idx2]['fields'][n]['fieldName'] == 'Cluster Instance Name' %}
+name: {{data['categories'][plat_idx2]['fields'][n]['fieldValue']}}
+{% endif %}
+{% endfor %}
+placementParams:
+- name: {{ folder }}
+  type: Folder
+- name: {{data1['MasterNodeStorageAllocation'][0]['Datastore'] }}
+  type: Datastore
+- name: {{ RP }}
+  type: ResourcePool
+- name: {{data1['MasterNodeAllocation'][0]['ClusterName'] }}
+  type: ClusterComputeResource
+vmTemplate: {{ temname }}
+vsphereClusterName: {{data1['NodeAllocation'][0]['ClusterName'] }}
+workerNodes:
+
+{% for x in range(data['categories'][plat_idx2]['fields'][field_idx]['children']| length) %}
+{% for n in range(data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children']| length ) %}
+{% if data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][n]['fieldName'] == 'Node Pool Type' and data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][n]['fieldValue'] == 'Worker' %}
+{% for z in range(data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children']| length ) %}
+{% if data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]['fieldName'] == 'Node Pool Name'%}
+- name: {{data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]['fieldValue']}}
+  placementParams:
+{% for i in range(data1['WorkerNodeAllocation']| length) %}
+{% if (data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]['fieldValue'] == data1['WorkerNodeAllocation'][i]['AllocatedNode']) %}
+  - name: {{data1['WorkerNodeAllocation'][i]['ClusterName'] }}
+{% endif %}
+{% endfor %}
+    type: ClusterComputeResource
+{% for i in range(data1['WorkerNodeStorageAllocation']| length) %}
+{% if (data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]['fieldValue'] == data1['WorkerNodeStorageAllocation'][i]['AllocatedNode']) %}
+  - name: {{data1['WorkerNodeStorageAllocation'][i]['Datastore'] }}
+{% endif %}
+{% endfor %}
+    type: Datastore
+  - name: {{ RP }}
+    type: ResourcePool
+  networks:
+{% elif data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["fieldName"] == 'Network' %}
+{% for p in range(data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["valueList"]| length) %}
+{% if data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["valueList"][p] == 'MANAGEMENT'%}
+  - isManagement: true
+    label: {{data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["valueList"][p]}}
+    networkName: {{cluster_name}}_{{data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["valueList"][p]}}
+    nameservers:
+    - {{ dns_server }}
+{% endif %}
+{% if data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["valueList"][p] != 'MANAGEMENT'%}
+  - isManagement: false
+    label: {{data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["valueList"][p]}}
+    networkName: {{data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["valueList"][p]}}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% endfor %}

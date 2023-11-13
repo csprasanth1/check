@@ -1,0 +1,78 @@
+---
+- hosts: all
+  gather_facts: no
+  tasks:
+  - name: sleep for 60 seconds and continue with play
+    wait_for: timeout=60
+    delegate_to: localhost
+
+  - name: Creates directory
+    become: true
+    file:
+      path: /kubebench
+      state: directory
+
+  - name: Creates directory
+    #    become: true
+    file:
+      path: /report/{{ BUILD }}/kubebench_reports
+      state: directory
+    delegate_to: localhost
+  - name: Creates diagnosis_reports directory
+      #      become: true
+    file:
+      path: /report/{{ BUILD }}/diagnosis_reports
+      state: directory
+    delegate_to: localhost  
+
+    #  - name: Clear Reports Folder
+    #    become: true
+    #    shell:
+    #      "rm -f /report/kubebench_reports/*"
+    #    ignore_errors: yes
+    #    delegate_to: localhost
+
+
+  - name: copying file with playbook
+    become: true
+    copy:
+      src: "{{ kubefile }}"
+      dest: /kubebench
+
+  - name: Extract kube-bench
+    become: true
+    ansible.builtin.unarchive:
+      src: /kubebench/{{ kubefile }}
+      dest: /kubebench
+      remote_src: yes
+
+  - name: Validate for master 
+    ansible.builtin.shell:
+      cmd: sudo netstat -tunlp|grep 6443
+    register: file_exists
+    ignore_errors: yes
+
+#  - debug: msg="{{file_exists.stdout}}"
+
+  - name: run on Worker
+#    debug:
+#      msg: This is Worker Node
+    become: true
+    ansible.builtin.shell:
+      cmd: /kubebench/kube-bench --config-dir /kubebench/cfg --config /kubebench/cfg/config.yaml run --targets=node --noremediations --nosummary --benchmark cis-1.20>/tmp/out
+    when: file_exists is failed
+
+  - name: run on Master
+    become: true
+#    debug:
+#      msg: This is Master Node
+    ansible.builtin.shell:
+      cmd: /kubebench/kube-bench --config-dir /kubebench/cfg --config /kubebench/cfg/config.yaml run --targets=master --noremediations --nosummary --benchmark cis-1.20 >/tmp/out
+    when: file_exists is succeeded
+
+  - name: Collect outputs into /kubebench/reports
+    become: true
+    fetch:
+      src: /tmp/out
+      dest: /report/{{ BUILD }}/kubebench_reports/{{ inventory_hostname }}
+      flat: yes

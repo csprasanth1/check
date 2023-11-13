@@ -1,0 +1,47 @@
+---
+- hosts: all
+  gather_facts: no
+  #  become: yes
+  tasks:
+
+    - name: "fetch version from webform"
+      shell: "python3 platform.py {{user}} {{web_pass}} {{nf}} {{weburl}}"
+      register: ver_list
+      delegate_to: localhost
+
+
+      #    - ansible.builtin.debug: msg="{{(ver_list.stdout | from_json).core}}"
+
+    - name: Copy file with owner and permissions
+      ansible.builtin.copy:
+        src: new_pkg.py
+        dest: /tmp/new_pkg.py
+        owner: capv
+        mode: '0744'
+#    - name: Creates diagnosis_reports directory
+      #      become: true
+#      file:
+#        path: /report/{{ BUILD }}/diagnosis_reports
+#        state: directory
+#      delegate_to: localhost
+
+
+    - name: Creates version_reports directory
+      #      become: true
+      file:
+        path: /report/{{ BUILD }}/version_reports
+        state: directory
+      delegate_to: localhost
+
+    - name: "Validating versions" 
+      shell: "python3 /tmp/new_pkg.py {{(ver_list.stdout | from_json).etcd}} {{(ver_list.stdout | from_json).core}} {{(ver_list.stdout | from_json).mul}} {{(ver_list.stdout | from_json).calico}} {{(ver_list.stdout | from_json).apiversion}} {{(ver_list.stdout | from_json).kubernetes}} {{(ver_list.stdout | from_json).helm}} {{(ver_list.stdout | from_json).kernel}} {{(ver_list.stdout | from_json).containerd}} {{(ver_list.stdout | from_json).istio}}"
+      register: file_exists
+      failed_when: "'Failed' in file_exists.stdout"
+      #    - ansible.builtin.debug: msg="{{file_exists.stdout}}"
+    - debug:
+            var: file_exists.stdout_lines
+    - name: "Save version check file"
+      #      become: true
+      local_action:
+        copy content="{{ file_exists.stdout }}" dest="/report/{{ BUILD }}/version_reports/version_check.txt"
+

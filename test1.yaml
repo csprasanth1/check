@@ -1,0 +1,24 @@
+---
+- hosts: all
+  gather_facts: no
+  become: true
+  roles:
+          - Kubernetes1.6.1-CIS
+  pre_tasks:
+          - name: Stopped the kubelet service
+            ansible.builtin.shell: systemctl stop kubelet
+            tags:
+            - kubelet
+          - name: Copy the encrypted file
+            ansible.builtin.copy:
+              src: encryption.yaml
+              dest: /etc/kubernetes/pki
+            tags:
+            - rule_1.2.33
+
+  post_tasks:
+          - name: Start the kubelet service
+            ansible.builtin.shell: systemctl start kubelet
+            tags:
+            - kubelet
+ 

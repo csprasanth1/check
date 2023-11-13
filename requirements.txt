@@ -1,0 +1,7 @@
+requests
+ruamel.yaml
+jinja2
+ansible
+pyvmomi
+robotframework
+robotframework-sshlibrary

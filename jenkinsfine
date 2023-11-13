@@ -1,0 +1,445 @@
+properties([parameters([string(defaultValue: 'http://api-service.requirements.svc.cluster.local:8080', name: 'web_URL'), [$class: 'CascadeChoiceParameter', choiceType: 'PT_SINGLE_SELECT', filterLength: 1, filterable: false, name: 'NF', randomName: 'choice-parameter-15699208674241817', referencedParameters: 'web_URL', script: [$class: 'GroovyScript', fallbackScript: [classpath: [], sandbox: false, script: ''], script: [classpath: [], sandbox: false, script: '''import jenkins.*
+import jenkins.model.* 
+import hudson.*
+import hudson.model.*
+def jenkinsCredentials = com.cloudbees.plugins.credentials.CredentialsProvider.lookupCredentials(
+        com.cloudbees.plugins.credentials.Credentials.class,
+        Jenkins.instance,
+        null,
+        null
+);
+for (creds in jenkinsCredentials) {
+  if(creds.id == "web"){
+    passval = creds.password
+	user = creds.username
+    
+    }
+}
+
+def env = System.getenv()
+def proc ="bash /tmp/bareprd/web.sh ${user} ${passval} ${web_URL}".execute()
+proc.waitFor()       
+
+def output = proc.in.text
+def exitcode= proc.exitValue()
+def error = proc.err.text
+
+if (error) {
+    println "Std Err: ${error}"
+    println "Process exit code: ${exitcode}"
+    return exitcode
+}
+return output.tokenize(\'\\n\')''']]], string(defaultValue: 'https://gitlab.globallab/wipro/inventory-bare.git', name: 'inventory_git'), [$class: 'CascadeChoiceParameter', choiceType: 'PT_SINGLE_SELECT', filterLength: 1, filterable: false, name: 'Location', randomName: 'choice-parameter-6630159497711769', referencedParameters: 'inventory_git', script: [$class: 'GroovyScript', fallbackScript: [classpath: [], sandbox: false, script: ''], script: [classpath: [], sandbox: false, script: '''import jenkins.*
+import jenkins.model.* 
+import hudson.*
+import hudson.model.*
+def jenkinsCredentials = com.cloudbees.plugins.credentials.CredentialsProvider.lookupCredentials(
+        com.cloudbees.plugins.credentials.Credentials.class,
+        Jenkins.instance,
+        null,
+        null
+);
+for (creds in jenkinsCredentials) {
+  if(creds.id == "gittefuser"){
+    passval = creds.password
+	user = creds.username
+    
+    }
+}
+def env = System.getenv()
+def proc ="bash /tmp/bareprd/inventory.sh ${passval} loc ${inventory_git}".execute()
+proc.waitFor()       
+
+def output = proc.in.text
+def exitcode= proc.exitValue()
+def error = proc.err.text
+
+if (error) {
+    println "Std Err: ${error}"
+    println "Process exit code: ${exitcode}"
+    return exitcode
+}
+return output.tokenize()''']]], [$class: 'CascadeChoiceParameter', choiceType: 'PT_SINGLE_SELECT', filterLength: 1, filterable: false, name: 'vcenter', randomName: 'choice-parameter-1999245653111293', referencedParameters: 'Location,inventory_git', script: [$class: 'GroovyScript', fallbackScript: [classpath: [], sandbox: false, script: 'return["error"]'], script: [classpath: [], sandbox: false, script: '''import jenkins.*
+import jenkins.model.* 
+import hudson.*
+import hudson.model.*
+def jenkinsCredentials = com.cloudbees.plugins.credentials.CredentialsProvider.lookupCredentials(
+        com.cloudbees.plugins.credentials.Credentials.class,
+        Jenkins.instance,
+        null,
+        null
+);
+for (creds in jenkinsCredentials) {
+  if(creds.id == "gittefuser"){
+    passval = creds.password
+	user = creds.username
+    
+    }
+}
+def env = System.getenv()
+def proc ="bash /tmp/bareprd/inventory.sh ${passval} vcenter ${inventory_git} ${Location}".execute()
+proc.waitFor()       
+
+def output = proc.in.text
+def exitcode= proc.exitValue()
+def error = proc.err.text
+
+if (error) {
+    println "Std Err: ${error}"
+    println "Process exit code: ${exitcode}"
+    return exitcode
+}
+return output.tokenize()''']]], [$class: 'CascadeChoiceParameter', choiceType: 'PT_SINGLE_SELECT', filterLength: 1, filterable: false, name: 'TCA', randomName: 'choice-parameter-1999245654580477', referencedParameters: 'Location,inventory_git', script: [$class: 'GroovyScript', fallbackScript: [classpath: [], sandbox: false, script: 'return["error"]'], script: [classpath: [], sandbox: false, script: '''import jenkins.*
+import jenkins.model.* 
+import hudson.*
+import hudson.model.*
+def jenkinsCredentials = com.cloudbees.plugins.credentials.CredentialsProvider.lookupCredentials(
+        com.cloudbees.plugins.credentials.Credentials.class,
+        Jenkins.instance,
+        null,
+        null
+);
+for (creds in jenkinsCredentials) {
+  if(creds.id == "gittefuser"){
+    passval = creds.password
+	user = creds.username
+    
+    }
+}
+def env = System.getenv()
+def proc ="bash /tmp/bareprd/inventory.sh ${passval} tca ${inventory_git} ${Location}".execute()
+proc.waitFor()       
+
+def output = proc.in.text
+def exitcode= proc.exitValue()
+def error = proc.err.text
+
+if (error) {
+    println "Std Err: ${error}"
+    println "Process exit code: ${exitcode}"
+    return exitcode
+}
+return output.tokenize()''']]], [$class: 'CascadeChoiceParameter', choiceType: 'PT_SINGLE_SELECT', filterLength: 1, filterable: false, name: 'vfolder', randomName: 'choice-parameter-1999245656094225', referencedParameters: 'vcenter', script: [$class: 'GroovyScript', fallbackScript: [classpath: [], sandbox: false, script: 'return[\'error\']'], script: [classpath: [], sandbox: false, script: '''import jenkins.*
+import jenkins.model.* 
+import hudson.*
+import hudson.model.*
+def jenkinsCredentials = com.cloudbees.plugins.credentials.CredentialsProvider.lookupCredentials(
+        com.cloudbees.plugins.credentials.Credentials.class,
+        Jenkins.instance,
+        null,
+        null
+);
+for (creds in jenkinsCredentials) {
+  if(creds.id == "vmware-bare"){
+    passval = creds.password
+	user = creds.username
+    
+    }
+}
+
+def env = System.getenv()
+def proc ="bash /tmp/bareprd/vm.sh ${user} ${passval} ${vcenter} folder".execute()
+proc.waitFor()       
+
+def output = proc.in.text
+def exitcode= proc.exitValue()
+def error = proc.err.text
+
+if (error) {
+    println "Std Err: ${error}"
+    println "Process exit code: ${exitcode}"
+    return exitcode
+}
+return output.tokenize(\'\\n\')''']]], choice(choices: ['NA', 'https://10.129.1.11'], name: 'NSX_URL'), [$class: 'CascadeChoiceParameter', choiceType: 'PT_SINGLE_SELECT', filterLength: 1, filterable: false, name: 'ResourcePool', randomName: 'choice-parameter-1999245660417533', referencedParameters: 'vcenter', script: [$class: 'GroovyScript', fallbackScript: [classpath: [], sandbox: false, script: 'return[\'error\']'], script: [classpath: [], sandbox: false, script: '''import jenkins.*
+import jenkins.model.* 
+import hudson.*
+import hudson.model.*
+def jenkinsCredentials = com.cloudbees.plugins.credentials.CredentialsProvider.lookupCredentials(
+        com.cloudbees.plugins.credentials.Credentials.class,
+        Jenkins.instance,
+        null,
+        null
+);
+for (creds in jenkinsCredentials) {
+  if(creds.id == "vmware-bare"){
+    passval = creds.password
+	user = creds.username
+    
+    }
+}
+
+def env = System.getenv()
+def proc ="bash /tmp/bareprd/vm.sh ${user} ${passval} ${vcenter} rpool".execute()
+proc.waitFor()       
+
+def output = proc.in.text
+def exitcode= proc.exitValue()
+def error = proc.err.text
+
+if (error) {
+    println "Std Err: ${error}"
+    println "Process exit code: ${exitcode}"
+    return exitcode
+}
+return output.tokenize(\'\\n\')''']]], string(defaultValue: '10.129.1.35', name: 'clusterip'), string(defaultValue: 'https://gitlab.globallab/infra/slave_bare_v2.git', name: 'artifact_git'), choice(choices: ['Workload', 'Management'], name: 'ClusterType'), [$class: 'CascadeChoiceParameter', choiceType: 'PT_SINGLE_SELECT', filterLength: 1, filterable: false, name: 'Management_Cluster', randomName: 'choice-parameter-1999245662690905', referencedParameters: 'TCA', script: [$class: 'GroovyScript', fallbackScript: [classpath: [], sandbox: false, script: 'return["error"]'], script: [classpath: [], sandbox: false, script: '''import jenkins.*
+import jenkins.model.* 
+import hudson.*
+import hudson.model.*
+def jenkinsCredentials = com.cloudbees.plugins.credentials.CredentialsProvider.lookupCredentials(
+        com.cloudbees.plugins.credentials.Credentials.class,
+        Jenkins.instance,
+        null,
+        null
+);
+for (creds in jenkinsCredentials) {
+  if(creds.id == "telco-bare"){
+    passval = creds.password
+	user = creds.username
+	
+    
+    }
+}
+
+def env = System.getenv()
+def proc ="bash /tmp/bareprd/mgt.sh ${user} ${passval} ${TCA} mgt".execute()
+proc.waitFor()       
+
+def output = proc.in.text
+def exitcode= proc.exitValue()
+def error = proc.err.text
+
+if (error) {
+    println "Std Err: ${error}"
+    println "Process exit code: ${exitcode}"
+    return exitcode
+}
+return output.tokenize(\'\\n\')''']]], [$class: 'CascadeChoiceParameter', choiceType: 'PT_SINGLE_SELECT', filterLength: 1, filterable: false, name: 'CP_Url', randomName: 'choice-parameter-1999245664100992', referencedParameters: 'TCA', script: [$class: 'GroovyScript', fallbackScript: [classpath: [], sandbox: false, script: 'return["error"]'], script: [classpath: [], sandbox: false, script: '''import jenkins.*
+import jenkins.model.* 
+import hudson.*
+import hudson.model.*
+def jenkinsCredentials = com.cloudbees.plugins.credentials.CredentialsProvider.lookupCredentials(
+        com.cloudbees.plugins.credentials.Credentials.class,
+        Jenkins.instance,
+        null,
+        null
+);
+for (creds in jenkinsCredentials) {
+  if(creds.id == "telco-bare"){
+    passval = creds.password
+	user = creds. username
+    
+    }
+}
+
+def env = System.getenv()
+def proc ="bash /tmp/bareprd/mgt.sh ${user} ${passval} ${TCA} vim".execute()
+proc.waitFor()       
+
+def output = proc.in.text
+def exitcode= proc.exitValue()
+def error = proc.err.text
+
+if (error) {
+    println "Std Err: ${error}"
+    println "Process exit code: ${exitcode}"
+    return exitcode
+}
+return output.tokenize(\'\\n\')''']]],string(defaultValue: 'https://.nip.io', name: 'Airgap_fqdn'), string(defaultValue: '9141a914-2ecf-4c84-93ba-84c230121d13', name: 'Airgap_extensionID'), string(defaultValue: 'https://.nip.io', name: 'Harbor_url'), string(defaultValue: 'a06f8e5b-29d0-4097-9379-c6da3187a11d', name: 'Harbor_extensionID'), string('syslog_server'), choice(choices: ['NA', ''], name: 'nfs_Server'), string(defaultValue: '1.9.1', name: 'AKO_Version')])])
+
+
+pipeline {
+    agent any
+    environment {
+       CRED = credentials('nodecred')
+       TCA_CRED = credentials('telco-bare')
+       WEB_CRED = credentials('web')
+       VMWARECRED = credentials('vmware-bare')
+      HARBOR = credentials('harbor')
+      NSXT = credentials('NSXT')
+       
+    }
+
+    stages  {
+
+        stage('Sync Dynamic Parameter artifacts') {
+            steps {
+                 dir("/tmp/bareprd") {
+                   git branch: 'main', credentialsId: 'gittefuser', url: '$artifact_git' 
+                } 
+            }
+        }
+
+        stage('Deploy Project') {
+                agent {
+            kubernetes {
+                 cloud 'kubernetes'
+		yaml '''
+        apiVersion: v1
+        kind: Pod
+        metadata:
+          labels:
+            type: kubepod
+        spec:
+          volumes:
+          - name: nfs-volume
+            nfs:
+              server: 
+              path: /nfs_vol
+          containers:
+          - name: deploy
+            image: 
+            imagePullPolicy: Always
+            tty: true
+            volumeMounts:
+              - mountPath: "/report"
+                name: nfs-volume
+            env:
+            - name: NO_PROXY
+              valueFrom:
+                configMapKeyRef:
+                  name: noproxy-configmap
+                  key: cmp
+            - name: GIT_SSL_NO_VERIFY
+              value: "true"                                      
+          - name: jnlp
+            image: jenkins/inbound-agent:4.11-1-jdk11
+            env:
+            - name: GIT_SSL_NO_VERIFY
+              value: "true"    
+            tty: true
+          imagePullSecrets:
+          - name: harborcred
+
+        '''
+            }
+    }
+
+           stages('Capacity Check') { 
+
+                stage('Capacity Validation') {
+					steps {
+						container('deploy'){
+							git branch: 'main', credentialsId: 'gittefuser', url: '$artifact_git'
+           
+							sh 'pwsh -Command TEF/capreport/esxicapacitycheckupdated.ps1 ${vcenter} $VMWARECRED_USR $VMWARECRED_PSW'
+							sh 'python3 TEF/capacityfinalreport/restapi.py -p "$WEB_CRED_PSW" -n "${NF}" -u "$WEB_CRED_USR" -w "${web_URL}" -o TEF/capacityfinalreport/webforminput.json'
+              // sh 'sleep 3600'
+							sh 'python3 TEF/capacityfinalreport/finalmain.py -w TEF/capacityfinalreport/webforminput.json -c TEF/capacityfinalreport/esxireport.csv -o TEF/capacityfinalreport/refout.json -s TEF/capacityfinalreport/storage.csv'
+             
+						}
+					}
+				}
+
+                stage('NFS Share Creation') {
+          when {
+						expression { params.nfs_Server != "NA" }
+					}
+					steps {
+						container('deploy'){
+              //sh 'sleep 36000'
+              sh 'python3 nfsfile_create.py "$WEB_CRED_USR" "$WEB_CRED_PSW" "${web_URL}" "$VMWARECRED_USR" "$VMWARECRED_PSW" "${NF}" ${vcenter}'
+             
+						}
+					}
+				}
+        stage('NSX Segment Creation') {
+          when {
+						expression { params.NSX_URL != "NA" }
+					}
+					steps {
+						container('deploy'){
+              
+              //sh 'echo $Network_data >/tmp/param.txt'
+              // sh 'sleep 3600'
+              sh 'python3 tier_seg.py "$WEB_CRED_USR" "$WEB_CRED_PSW" "${web_URL}" "$NSXT_USR" "$NSXT_PSW" "${NSX_URL}" "${NF}"'
+              //sh 'sleep 3600'
+             
+						}
+					}
+				}        
+				stage('Cluster Build') {
+					environment {
+						value ="${env.BUILD_NUMBER}"
+          }
+          
+					steps {
+						container('deploy'){
+
+              sh 'sleep 60'
+							sh 'python3 -u API/createcluster_nfs.py -p1 "$CRED_PSW" -p2 "${TCA}" -p3 "$TCA_CRED_PSW" -p4 "${vfolder}" -p6 "${ResourcePool}" -p7 "${Management_Cluster}" -p8 "${CP_Url}" -p9 "$WEB_CRED_PSW" -p10 "${NF}" -p11 "${web_URL}" -p12 "${clusterip}" -p13 "$TCA_CRED_USR" -p14 "$WEB_CRED_USR" -p15 "${Airgap_fqdn}" -p16 "${Airgap_extensionID}" -p17 "${Harbor_url}" -p18 "${Harbor_extensionID}" -p19 "${syslog_server}" -p20 "$HARBOR_USR" -p21 "$HARBOR_PSW" -p22 "$nfs_Server"'
+                   script {
+								clustername = readFile("clustername").trim()
+								istio = readFile(file: 'istiotxt').trim()
+                            }
+						}
+                    }
+				}
+				stage('istio install') {
+                    when {
+						expression { "${istio}" == 'YES' }
+					}
+					steps {
+						container('deploy'){
+                            sh 'sleep 60'
+							sh 'python3 API/istioinstall.py "$WEB_CRED_USR" "$WEB_CRED_PSW" "${NF}" "$HARBOR_USR" "$HARBOR_PSW" "workloadconfig" "$Harbor_url" "${web_URL}"'
+
+						}
+                    }
+				}	
+                stage('AKO Operator Installation') {
+          when {
+						expression { params.AKO_Version != "" }
+					}
+					steps {
+						container('deploy'){
+              //sh 'sleep 36000'
+              sh 'python3 API/ako_install.py "$WEB_CRED_USR" "$WEB_CRED_PSW" "${NF}" "$HARBOR_USR" "$HARBOR_PSW" "workloadconfig" "$Harbor_url" "${web_URL}" "${AKO_Version}"'
+             
+						}
+					}
+				}        			
+				stage('security check') {
+					environment {
+						cluster = "${clustername}"
+					}
+					steps {
+						container('deploy'){
+
+                            // sh 'export VMWARE_HOST=${vcenter};export VMWARE_PASSWORD=$VMWARECRED_PSW;export VMWARE_USER=$VMWARECRED_USR;/usr/local/bin/ansible-playbook /prd/test1.yaml --tags=kubelet,rule_1.3.1,rule_1.2.26,rule_1.2.33 -i /prd/inventory.vmware.yml -l ${cluster}-*-control-plane* -e ansible_user=$CRED_USR -e ansible_password=$CRED_PSW'
+							// sh 'export VMWARE_HOST=${vcenter};export VMWARE_PASSWORD=$VMWARECRED_PSW;export VMWARE_USER=$VMWARECRED_USR;/usr/local/bin/ansible-playbook /prd/test1.yaml --tags=rule_4_2_6,rule_4_2_9,rule_4_2_10 -i /prd/inventory.vmware.yml -l ${cluster}* -e ansible_user=$CRED_USR -e ansible_password=$CRED_PSW'
+              sh 'sleep 120'
+							sh 'export VMWARE_HOST=${vcenter};export VMWARE_PASSWORD=$VMWARECRED_PSW;export VMWARE_USER=$VMWARECRED_USR;ansible-playbook kubebench.yaml -i /app/inventory.vmware.yml -l ${cluster}* -e ansible_user=$CRED_USR -e ansible_password=$CRED_PSW -e BUILD=${BUILD_NUMBER} -e kubefile=kube-bench_0.6.5_linux_amd64.tar.gz'
+						}
+                    }
+				}
+				stage('Version_check') {
+					when {
+						expression { params.ClusterType == 'Workload' }
+					}
+					environment {
+						cluster = "${clustername}"
+                    }
+					steps {
+						container('deploy'){
+              //sh 'sleep 3600'
+							sh 'export VMWARE_HOST=${vcenter};export VMWARE_PASSWORD=$VMWARECRED_PSW;export VMWARE_USER=$VMWARECRED_USR;ansible-playbook pkg.yaml -i /app/inventory.vmware.yml -l ${cluster}-*-control-plane* -e ansible_user=$CRED_USR -e ansible_password=$CRED_PSW -e web_pass=$WEB_CRED_PSW -e user=$WEB_CRED_USR -e nf=${NF} -e BUILD=${BUILD_NUMBER} -e weburl=${web_URL}'
+						}
+					}
+				}
+				stage('Cluster Health Validation') {
+					environment {
+						cluster = "${clustername}"
+            BUILD="${env.BUILD_NUMBER}"
+                    }
+					steps {
+						container('deploy'){
+							sh 'sleep 300'
+							sh 'bash run-diagnosis-2.1.0 --kubeconfig config ${cluster} | tee -a /report/${BUILD}/diagnosis_reports/diagnosis.txt'
+						}
+					}
+				}    
+            }
+        }
+    }
+}    
+

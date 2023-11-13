@@ -1,0 +1,142 @@
+{% if data['categories'][plat_idx2]['fields'][field_idx]['fieldValue'] == "Workload" %}
+clusterConfig:
+  cni:
+{% for y in range(data['categories'][plat_idx2]['fields'][field_idx]['children'][net_idx]['children']| length) %}
+{% if data['categories'][plat_idx2]['fields'][field_idx]['children'][net_idx]['children'][y]['fieldName'] == 'CNI Primary' %}
+  - name: {{data['categories'][plat_idx2]['fields'][field_idx]['children'][net_idx]['children'][y]['fieldValue']}}
+{% elif data['categories'][plat_idx2]['fields'][field_idx]['children'][net_idx]['children'][y]['fieldName'] == 'CNI Secondary' and data['categories'][plat_idx2]['fields'][field_idx]['children'][net_idx]['children'][y]['fieldValue'] != 'none' %}
+  - name: {{data['categories'][plat_idx2]['fields'][field_idx]['children'][net_idx]['children'][y]['fieldValue']}}
+{% endif %}
+{% endfor %}
+{% for n in range(data['categories'][plat_idx]['fields']| length) %}
+{% if data['categories'][plat_idx]['fields'][n]['fieldName'] == 'Kubernetes version' %}
+  kubernetesVersion: {{data['categories'][plat_idx]['fields'][n]['fieldValue']}}
+{% endif %}
+{% if data['categories'][plat_idx]['fields'][n]['fieldName'] == 'Helm Version' %}
+{% if data['categories'][plat_idx]['fields'][n]['fieldValue'] != '' %}
+  tools:
+  - name: helm
+    version: {{data['categories'][plat_idx]['fields'][n]['fieldValue']}}
+{% endif %}
+{% endif %}
+{% endfor %}
+  csi:
+{% for n in range(data['categories'][plat_idx2]['fields'][field_idx]['children'][csi_idx]['children']| length) %}
+{% if data['categories'][plat_idx2]['fields'][field_idx]['children'][csi_idx]['children'][n]['fieldName'] == 'Storage' %}
+{% if data['categories'][plat_idx2]['fields'][field_idx]['children'][csi_idx]['children'][n]['fieldValue'] == 'vsphere' %}
+  - name: vsphere-csi
+    properties:
+      isDefault: true
+      name: vsphere-sc
+      timeout: '300'
+{% elif data['categories'][plat_idx2]['fields'][field_idx]['children'][csi_idx]['children'][n]['fieldValue'] == 'nfs' %}
+  - name: nfs_client
+    properties:
+{% if data['categories'][plat_idx2]['fields'][field_idx]['children'][csi_idx]['children'][n]['fieldName'] == 'isDefault' %}
+      isDefault: {{data['categories'][plat_idx2]['fields'][field_idx]['children'][csi_idx]['children'][n]['fieldValue']}}
+{% endif %}
+      name: nfs-client
+{% endif %}
+{% endif %}
+{% endfor %}
+clusterType: WORKLOAD
+{% endif %}
+{% if data['categories'][plat_idx2]['fields'][field_idx]['fieldValue'] == 'Management' %}
+clusterConfig:
+{% for n in range(data['categories'][plat_idx2]['fields']| length) %}
+{% if data['categories'][plat_idx2]['fields'][n]['fieldName'] == 'Kubernetes Min Version' %}
+  kubernetesVersion: {{data['categories'][plat_idx2]['fields'][n]['fieldValue']}}
+{% endif %}
+{% endfor %}
+clusterType: MANAGEMENT
+{% endif %}
+{% for n in range(data['categories'][plat_idx2]['fields']| length) %}
+{% if data['categories'][plat_idx2]['fields'][n]['fieldName'] == 'Template Description' %}
+description: {{data['categories'][plat_idx2]['fields'][n]['fieldValue']}}
+{% endif %}
+{% if data['categories'][plat_idx2]['fields'][n]['fieldName'] == 'Template Name' %}
+name: {{data['categories'][plat_idx2]['fields'][n]['fieldValue']}}
+{% endif %}
+{% endfor %}
+masterNodes:
+-
+{% for x in range(data['categories'][plat_idx2]['fields'][field_idx]['children']| length) %}
+{% for n in range(data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children']| length ) %}
+{% if data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][n]['fieldName'] == 'Node Pool Type' and data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][n]['fieldValue'] == 'Master' %}
+{% for z in range(data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children']| length) %}
+{% if data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["fieldName"] == 'Number of Replica' %}
+  replica: {{data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["fieldValue"]}}
+{% elif data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["fieldName"] == 'Node Pool CPU (vCPUs)' %}
+  cpu: {{data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["fieldValue"]}}
+{% elif data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["fieldName"] == 'Node Memory (MB)' %}
+  memory: {{data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["fieldValue"]}}
+{% elif data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["fieldName"] == 'Node Pool Name' %}
+  name: {{data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["fieldValue"]}}
+{% elif data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["fieldName"] == 'Label' %}
+  labels:
+{% for p in range(data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["keyValueList"]| length) %}
+  -   {{data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["keyValueList"][p]["key"]}}={{data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["keyValueList"][p]["value"]}}
+{% endfor %}
+{% elif data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["fieldName"] == 'Node Storage (GB)' %}
+  storage: {{data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["fieldValue"]}}
+{% elif data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["fieldName"] == 'Network' %}
+  networks:
+{% for p in range(data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["valueList"]| length) %}
+{% if data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["valueList"][p] == 'MANAGEMENT'%}
+  - isManagement: true
+    label: {{data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["valueList"][p]}}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% endfor %}
+tags: []
+workerNodes:
+{% for x in range(data['categories'][plat_idx2]['fields'][field_idx]['children']| length) %}
+{% for n in range(data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children']| length ) %}
+{% if data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][n]['fieldName'] == 'Node Pool Type' and data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][n]['fieldValue'] == 'Worker' %}
+-
+{% for z in range(data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children']| length) %}
+{% if data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["fieldName"] == 'Number of Replica' %}
+  replica: {{data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["fieldValue"]}}
+{% elif data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["fieldName"] == 'Node Pool CPU (vCPUs)' %}
+  cpu: {{data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["fieldValue"]}}
+{% elif data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["fieldName"] == 'Node Memory (MB)' %}
+  memory: {{data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["fieldValue"]}}
+{% elif data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["fieldName"] == 'Node Pool Name' %}
+  name: {{data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["fieldValue"]}}
+{% elif data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["fieldName"] == 'Label' %}
+  labels:
+{% for p in range(data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["keyValueList"]| length) %}
+  - {{data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["keyValueList"][p]["key"]}}={{data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["keyValueList"][p]["value"]}}
+{% endfor %}
+{% elif data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["fieldName"] == 'Node Storage (GB)' %}
+  storage: {{data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["fieldValue"]}}
+{% elif data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["fieldName"] == 'Network' %}
+  networks:
+{% for p in range(data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["valueList"]| length) %}
+{% if data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["valueList"][p] == 'MANAGEMENT'%}
+  - isManagement: true
+    label: {{data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["valueList"][p]}}
+{% endif %}
+{% if data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["valueList"][p] != 'MANAGEMENT'%}
+  - isManagement: false
+    label: {{data['categories'][plat_idx2]['fields'][field_idx]['children'][x]['children'][z]["valueList"][p]}}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% endfor %}
+  config:
+    cpuManagerPolicy:
+{% for n in range(data['categories'][plat_idx3]['fields']| length) %}
+{% if data['categories'][plat_idx3]['fields'][n]['fieldName'] == 'CPU Manager Policy' %}
+      policy: default
+      type: kubernetes
+{% endif %}
+{% endfor %}
+

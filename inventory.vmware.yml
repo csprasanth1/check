@@ -1,0 +1,7 @@
+plugin: vmware_vm_inventory
+strict: False
+validate_certs: False
+with_tags: False
+hostnames:
+  - config.name
+
